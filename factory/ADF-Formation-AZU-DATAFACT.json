@@ -1,0 +1,9 @@
+{
+	"name": "ADF-Formation-AZU-DATAFACT",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "00778610-64d3-4c1a-91e9-cb43279ee7b8",
+		"tenantId": "dab7d5be-3d32-41f6-b6b4-f31ecf90c7af"
+	}
+}

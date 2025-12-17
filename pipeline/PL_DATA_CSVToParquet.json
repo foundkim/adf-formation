@@ -1,0 +1,112 @@
+{
+	"name": "PL_DATA_CSVToParquet",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_DS_ADLS_Input_To_DS_ADLS_OutputParquet",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Journée gazière",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "JourneeGaziere",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "Couleur du signal (ENG)",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CouleurSignalEng",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "Couleur du signal (FR)",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "CouleurSignalFr",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "Indice de couleur",
+									"type": "Int16",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "IndiceCouleur",
+									"isNullable": true
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ADLS_Input",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Output_Parquet",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-12-17T14:37:09Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,30 @@
+{
+	"name": "DS_ADLS_Input",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_Formation",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "signal-ecogaz.csv",
+				"folderPath": "csv",
+				"fileSystem": "input"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Journée gazière;Couleur du signal (ENG);Couleur du signal (FR);Indice de couleur",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
