@@ -9,6 +9,10 @@
 			"SQLSeverHostName": {
 				"type": "string",
 				"value": "mss-formation-adf.database.windows.net"
+			},
+			"SQLServerDBName": {
+				"type": "string",
+				"value": "sql-formation-adf"
 			}
 		}
 	},
