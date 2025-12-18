@@ -13,6 +13,10 @@
 			"SQLServerDBName": {
 				"type": "string",
 				"value": "sql-formation-adf"
+			},
+			"SQlServerAdminUser": {
+				"type": "string",
+				"value": "sql-admin"
 			}
 		}
 	},
