@@ -1,0 +1,12 @@
+{
+	"name": "LS_REST_APIEcogaz",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
