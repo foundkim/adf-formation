@@ -1,0 +1,191 @@
+{
+	"name": "PL_IngestionFromAPI",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_DS_REST_to_SQL",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['gas_day']"
+								},
+								"sink": {
+									"name": "JourneeGaziere",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['color']"
+								},
+								"sink": {
+									"name": "CouleurSignalEng",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['couleur_du_signal_fr']"
+								},
+								"sink": {
+									"name": "CouleurSignalFr",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['indice_de_couleur']"
+								},
+								"sink": {
+									"name": "IndiceCouleur",
+									"type": "Int16"
+								}
+							}
+						],
+						"collectionReference": "$['results']",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_REST_APIEcogaz",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_SQL_Formatin",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Set BaseURL",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "BaseURL",
+					"value": {
+						"value": "@pipeline().globalParameters.BaseURL",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set Tableau",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Tableau",
+					"value": [
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			},
+			{
+				"name": "Append New Item",
+				"type": "AppendVariable",
+				"dependsOn": [
+					{
+						"activity": "Set Tableau",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Tableau",
+					"value": {
+						"value": "{\n    \"pipeline\": \"@{pipeline().Pipeline}\",\n    \"adf\" : \"@{pipeline().DataFactory}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set TableauFinal",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Append New Item",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "TableauFinal",
+					"value": {
+						"value": "@variables('Tableau')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"p_BaseURL": {
+				"type": "string"
+			},
+			"p_Env": {
+				"type": "string",
+				"defaultValue": "Test"
+			}
+		},
+		"variables": {
+			"BaseURL": {
+				"type": "String"
+			},
+			"Tableau": {
+				"type": "Array"
+			},
+			"TableauFinal": {
+				"type": "Array"
+			}
+		},
+		"annotations": []
+	}
+}

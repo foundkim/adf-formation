@@ -1,0 +1,19 @@
+{
+	"name": "DS_SQL_Formatin",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_MSQL_Formatio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SQL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "signal_ecogaz"
+		}
+	}
+}
