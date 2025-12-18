@@ -17,6 +17,10 @@
 			"SQlServerAdminUser": {
 				"type": "string",
 				"value": "sql-admin"
+			},
+			"SQlServerPassword": {
+				"type": "string",
+				"value": "3V!C}-k8*tXzC!="
 			}
 		}
 	},
