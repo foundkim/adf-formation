@@ -100,7 +100,10 @@
 				"outputs": [
 					{
 						"referenceName": "DS_ADLS_Output_Parquet",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "    "
+						}
 					}
 				]
 			},
