@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADF-Formation-AZU-DATAFACT"
+		},
+		"LS_MSQL_Formatio_password": {
+			"value": ""
+		},
+		"LS_ADLS_Formation_properties_typeProperties_url": {
+			"value": "https://scformationadf.dfs.core.windows.net/"
+		},
+		"LS_AKV_Formation_properties_typeProperties_baseUrl": {
+			"value": "https://AV-formation-Adf2.vault.azure.net/"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_server": {
+			"value": "mss-formation-adf.database.windows.net"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_database": {
+			"value": "sql-formation-adf"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_userName": {
+			"value": "sql-admin"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_server": {
+			"value": "@{linkedService().SQLServerHostName}"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_database": {
+			"value": "@{linkedService().SQLServerDBName}"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_userName": {
+			"value": "@{linkedService().SQLServerAdminUser}"
+		},
+		"LS_REST_APIEcogaz_properties_typeProperties_url": {
+			"value": "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/"
+		},
+		"trigger1_properties_typeProperties_scope": {
+			"value": "/subscriptions/9a86476e-b022-4aa8-9372-dab324cf625d/resourceGroups/RG-Formation-ADF/providers/Microsoft.Storage/storageAccounts/scformationadf"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

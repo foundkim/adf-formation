@@ -1,0 +1,1498 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-Formation-AZU-DATAFACT"
+		},
+		"LS_MSQL_Formatio_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_MSQL_Formatio'"
+		},
+		"LS_AKV_Formation_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://AV-formation-Adf2.vault.azure.net/"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "mss-formation-adf.database.windows.net"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "sql-formation-adf"
+		},
+		"LS_MSQL_Formatio_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql-admin"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "@{linkedService().SQLServerHostName}"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@{linkedService().SQLServerDBName}"
+		},
+		"LS_MSSQL_Formation_Dynamique_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().SQLServerAdminUser}"
+		},
+		"LS_REST_APIEcogaz_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/"
+		},
+		"LS_ADLS_Formation_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://scformationadf.dfs.core.windows.net/"
+		},
+		"trigger1_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/9a86476e-b022-4aa8-9372-dab324cf625d/resourceGroups/RG-Formation-ADF/providers/Microsoft.Storage/storageAccounts/scformationadf"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AKV_Formation')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('LS_AKV_Formation_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_MSQL_Formatio')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_MSQL_Formatio_properties_typeProperties_server')]",
+					"database": "[parameters('LS_MSQL_Formatio_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_MSQL_Formatio_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_MSQL_Formatio_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_MSSQL_Formation_Dynamique')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"SQLServerHostName": {
+						"type": "String"
+					},
+					"SQLServerDBName": {
+						"type": "String"
+					},
+					"SQLServerAdminUser": {
+						"type": "String"
+					},
+					"SQLServerPassword": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_MSSQL_Formation_Dynamique_properties_typeProperties_server')]",
+					"database": "[parameters('LS_MSSQL_Formation_Dynamique_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_MSSQL_Formation_Dynamique_properties_typeProperties_userName')]",
+					"password": "@{linkedService().SQLServerPassword}"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_REST_APIEcogaz')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('LS_REST_APIEcogaz_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_REST_APIEcogaz')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_REST_APIEcogaz",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "REST"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": "signal-ecogaz/records?limit=100"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_REST_APIEcogaz')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_Formatin')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_MSQL_Formatio",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "SQL"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "signal_ecogaz"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_MSQL_Formatio')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_Formation_Dynamique')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_MSSQL_Formation_Dynamique",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"SQLServerHostName": {
+							"value": "@dataset().DS_SQLServerName",
+							"type": "Expression"
+						},
+						"SQLServerDBName": {
+							"value": "@dataset().DS_SQLServerDBName",
+							"type": "Expression"
+						},
+						"SQLServerAdminUser": {
+							"value": "@dataset().DS_SQLServerAdminUser",
+							"type": "Expression"
+						},
+						"SQLServerPassword": {
+							"value": "@dataset().DS_SQLServerPassword",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"DS_SQLServerName": {
+						"type": "string"
+					},
+					"DS_SQLServerAdminUser": {
+						"type": "string"
+					},
+					"DS_SQLServerPassword": {
+						"type": "string"
+					},
+					"DS_SQLServerDBName": {
+						"type": "string"
+					},
+					"Schema": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SQL"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().Schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_MSSQL_Formation_Dynamique')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ADLS_Formation')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_ADLS_Formation_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LS_AKV_Formation",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "StorageAccountKey"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_AKV_Formation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_IngestionFromAPI')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CP_DS_REST_to_SQL",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['gas_day']"
+										},
+										"sink": {
+											"name": "JourneeGaziere",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['color']"
+										},
+										"sink": {
+											"name": "CouleurSignalEng",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['couleur_du_signal_fr']"
+										},
+										"sink": {
+											"name": "CouleurSignalFr",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['indice_de_couleur']"
+										},
+										"sink": {
+											"name": "IndiceCouleur",
+											"type": "Int16"
+										}
+									}
+								],
+								"collectionReference": "$['results']",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_REST_APIEcogaz",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_SQL_Formatin",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Set BaseURL",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "BaseURL",
+							"value": {
+								"value": "@pipeline().globalParameters.BaseURL",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set Tableau",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "Tableau",
+							"value": [
+								1,
+								2,
+								3,
+								4,
+								5
+							]
+						}
+					},
+					{
+						"name": "Append New Item",
+						"type": "AppendVariable",
+						"dependsOn": [
+							{
+								"activity": "Set Tableau",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "Tableau",
+							"value": {
+								"value": "{\n    \"pipeline\": \"@{pipeline().Pipeline}\",\n    \"adf\" : \"@{pipeline().DataFactory}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set TableauFinal",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Append New Item",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "TableauFinal",
+							"value": {
+								"value": "@variables('Tableau')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_BaseURL": {
+						"type": "string"
+					},
+					"p_Env": {
+						"type": "string",
+						"defaultValue": "Test"
+					}
+				},
+				"variables": {
+					"BaseURL": {
+						"type": "String"
+					},
+					"Tableau": {
+						"type": "Array"
+					},
+					"TableauFinal": {
+						"type": "Array"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_REST_APIEcogaz')]",
+				"[concat(variables('factoryId'), '/datasets/DS_SQL_Formatin')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Input')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Formation",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "ADLS"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "csv",
+						"fileSystem": "input"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Journée gazière;Couleur du signal (ENG);Couleur du signal (FR);Indice de couleur",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Formation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Output_Parquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Formation",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "ADLS"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().FileName",
+							"type": "Expression"
+						},
+						"fileSystem": "output"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Formation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ControlFlow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Switch1",
+						"type": "Switch",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Get OutPut Files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@activity('Get OutPut Files').output.itemType",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "Folder",
+									"activities": [
+										{
+											"name": "Set SubItems",
+											"type": "SetVariable",
+											"dependsOn": [],
+											"policy": {
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"variableName": "SubFolderAndFiled",
+												"value": {
+													"value": "@activity('Get OutPut Files').output.childItems",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"value": "File",
+									"activities": [
+										{
+											"name": "Set File Type",
+											"type": "SetVariable",
+											"dependsOn": [],
+											"policy": {
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"variableName": "FileType",
+												"value": {
+													"value": "@concat(\n'Type de Fichier: ',\nlast(split(activity('Get OutPut Files').output.itemName, '.'))\n)",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Get OutPut Files",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_ADLS_Output_Parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": "   "
+								}
+							},
+							"fieldList": [
+								"itemType",
+								"itemName",
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "ParquetReadSettings"
+							}
+						}
+					},
+					{
+						"name": "FE_ExtractFiles",
+						"type": "ForEach",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Get OutPut Files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get OutPut Files').output.childItems\nfff",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "Copy_File_to_CSV",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "ParquetSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "ParquetReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"copyBehavior": "PreserveHierarchy"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ADLS_Output_Parquet",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_Input",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Set LIste des fichiers",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@empty(variables('ListeDesFichiers'))",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy_File_to_CSV_Until",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Set Current Item Name",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "ParquetSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "ParquetReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings",
+												"copyBehavior": "PreserveHierarchy"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ADLS_Output_Parquet",
+											"type": "DatasetReference",
+											"parameters": {
+												"FileName": {
+													"value": "@variables('currentItemName')",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_Input",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								},
+								{
+									"name": "Set Current Item Name",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "currentItemName",
+										"value": {
+											"value": "@first(variables('ListeDesFichiers')).name",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set New Liste",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Copy_File_to_CSV_Until",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "TempListeFichier",
+										"value": {
+											"value": "@skip(variables('ListeDesFichiers'), 1)",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Update ListedesFichiers",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set New Liste",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "ListeDesFichiers",
+										"value": {
+											"value": "@variables('TempListeFichier')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"timeout": "0.12:00:00"
+						}
+					},
+					{
+						"name": "Set LIste des fichiers",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Get OutPut Files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ListeDesFichiers",
+							"value": {
+								"value": "@activity('Get OutPut Files').output.childItems",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"SubFolderAndFiled": {
+						"type": "Array"
+					},
+					"FileType": {
+						"type": "String"
+					},
+					"ListeDesFichiers": {
+						"type": "Array"
+					},
+					"currentItemName": {
+						"type": "String"
+					},
+					"TempListeFichier": {
+						"type": "Array"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Output_Parquet')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Input')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_DATA_CSVToParquet')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CP_DS_ADLS_Input_To_DS_ADLS_OutputParquet",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "Journée gazière",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "JourneeGaziere",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Couleur du signal (ENG)",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CouleurSignalEng",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Couleur du signal (FR)",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CouleurSignalFr",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Indice de couleur",
+											"type": "Int16",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "IndiceCouleur",
+											"isNullable": true
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_ADLS_Input",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Output_Parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": "trdy"
+								}
+							}
+						]
+					},
+					{
+						"name": "CP_DS_ADLS_Input_To_DS_SQL",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "Journée gazière",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "JourneeGaziere",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Couleur du signal (ENG)",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CouleurSignalEng",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Couleur du signal (FR)",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "CouleurSignalFr",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "Indice de couleur",
+											"type": "Int16",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "IndiceCouleur",
+											"isNullable": true
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_ADLS_Input",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_SQL_Formatin",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-12-17T14:37:09Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Input')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Output_Parquet')]",
+				"[concat(variables('factoryId'), '/datasets/DS_SQL_Formatin')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_IngestionToSQl')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * from signal_ecogaz where \t\n'Journée gazière' > '2022-10-18' ",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_SQL_Formatin",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Input",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_SQL_Formatin')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Input')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Main')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PL_Execute_Ingestion",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "PL_IngestionFromAPI",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_IngestionFromAPI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_TransfromECOgaz')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_ADLS_Input",
+								"type": "DatasetReference"
+							},
+							"name": "EcoGazSource"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LS_ADLS_Formation",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RenameDateColumn"
+						},
+						{
+							"name": "AddWeedkend"
+						},
+						{
+							"name": "FilterWeekenData"
+						},
+						{
+							"name": "alterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          {Journée gazière} as date,",
+						"          {Couleur du signal (ENG)} as string,",
+						"          {Couleur du signal (FR)} as string,",
+						"          {Indice de couleur} as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     wildcardPaths:['csv/*.csv']) ~> EcoGazSource",
+						"EcoGazSource select(mapColumn(",
+						"          Date = {Journée gazière},",
+						"          each(match(instr(name,' ')!=0),",
+						"               regexReplace(initCap($$),'[^a-zA-Z]','') = $$)",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> RenameDateColumn",
+						"RenameDateColumn derive(WeekEnd = dayOfWeek(Date) == 1 || dayOfWeek(Date) == 7,",
+						"          each(match(startsWith(name,\"Date\")), concat('Nouvelle_', $$) = addMonths($$, 1))) ~> AddWeedkend",
+						"AddWeedkend filter(WeekEnd) ~> FilterWeekenData",
+						"FilterWeekenData alterRow(upsertIf(IndiceDeCouleur==1),",
+						"     deleteIf(true())) ~> alterRow1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     compressionType: 'snappy',",
+						"     compressionLevel: 'Fastest',",
+						"     fileSystem: 'output',",
+						"     folderPath: 'delta',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     keys:['Date','Couleur du signal (FR)','Indice de couleur'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Input')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Formation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pl_Transformation')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_TransfromECOgaz",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EcoGazSource": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_TransfromECOgaz')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TR_Schedule')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Pl_Transformation",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2025-12-19T14:59:00",
+						"endTime": "2025-12-20T13:57:00",
+						"timeZone": "Romance Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Pl_Transformation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Pl_Transformation",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/input/blobs/csv",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trigger1_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Pl_Transformation')]"
+			]
+		}
+	]
+}

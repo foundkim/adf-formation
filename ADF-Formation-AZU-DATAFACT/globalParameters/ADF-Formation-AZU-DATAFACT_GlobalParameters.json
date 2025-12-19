@@ -1,0 +1,22 @@
+{
+	"BaseURL": {
+		"type": "string",
+		"value": "https://odre.opendatasoft.com/api/explore/v2.1/"
+	},
+	"SQLSeverHostName": {
+		"type": "string",
+		"value": "mss-formation-adf.database.windows.net"
+	},
+	"SQLServerDBName": {
+		"type": "string",
+		"value": "sql-formation-adf"
+	},
+	"SQlServerAdminUser": {
+		"type": "string",
+		"value": "sql-admin"
+	},
+	"SQlServerPassword": {
+		"type": "string",
+		"value": "3V!C}-k8*tXzC!="
+	}
+}
