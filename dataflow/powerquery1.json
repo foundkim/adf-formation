@@ -1,0 +1,20 @@
+{
+	"name": "powerquery1",
+	"properties": {
+		"type": "WranglingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"name": "DS_ADLS_Input",
+					"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~>  DS_ADLS_Input",
+					"dataset": {
+						"referenceName": "DS_ADLS_Input",
+						"type": "DatasetReference"
+					}
+				}
+			],
+			"script": "section Section1;\r\nshared DS_ADLS_Input = let AdfDoc = AzureStorage.DataLakeContents(\"https://scformationadf.dfs.core.windows.net/input/csv/signal-ecogaz.csv\"),Csv = Csv.Document(AdfDoc, [Delimiter = \";\", Encoding = TextEncoding.Utf8, QuoteStyle = QuoteStyle.Csv]), PromotedHeaders = Table.PromoteHeaders(Csv, [PromoteAllScalars = true]) in  PromotedHeaders;\r\nshared UserQuery = let Source = #\"DS_ADLS_Input\",\r\n  #\"Renamed columns\" = Table.RenameColumns(Source, {{\"Couleur du signal (ENG)\", \"Couleur du signal\"}}) in #\"Renamed columns\";\r\n",
+			"documentLocale": "en-us"
+		}
+	}
+}
