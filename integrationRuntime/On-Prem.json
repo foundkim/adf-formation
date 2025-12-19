@@ -1,0 +1,6 @@
+{
+	"name": "On-Prem",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
