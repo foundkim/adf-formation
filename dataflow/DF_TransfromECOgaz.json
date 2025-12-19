@@ -1,0 +1,85 @@
+{
+	"name": "DF_TransfromECOgaz",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_Input",
+						"type": "DatasetReference"
+					},
+					"name": "EcoGazSource"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "LS_ADLS_Formation",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "RenameDateColumn"
+				},
+				{
+					"name": "AddWeedkend"
+				},
+				{
+					"name": "FilterWeekenData"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          {Journée gazière} as date,",
+				"          {Couleur du signal (ENG)} as string,",
+				"          {Couleur du signal (FR)} as string,",
+				"          {Indice de couleur} as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     wildcardPaths:['csv/*.csv']) ~> EcoGazSource",
+				"EcoGazSource select(mapColumn(",
+				"          Date = {Journée gazière},",
+				"          each(match(instr(name, ' ') != 0),",
+				"               regexReplace(initCap($$), '[^a-zA-Z]', '') = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameDateColumn",
+				"RenameDateColumn derive(WeekEnd = dayOfWeek(Date) == 1 || dayOfWeek(Date) == 7,",
+				"          each(match(startsWith(name, \"Date\")), concat('Nouvelle_', $$) = addMonths($$, 1))) ~> AddWeedkend",
+				"AddWeedkend filter(WeekEnd) ~> FilterWeekenData",
+				"FilterWeekenData alterRow(upsertIf(IndiceDeCouleur == 1),",
+				"     deleteIf(true())) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     compressionType: 'snappy',",
+				"     compressionLevel: 'Fastest',",
+				"     fileSystem: 'output',",
+				"     folderPath: 'delta',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     keys:['Date','Couleur du signal (FR)','Indice de couleur'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
