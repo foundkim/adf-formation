@@ -1,0 +1,47 @@
+{
+	"name": "DS_SQL_DATA",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL_DataTP",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "INTENSITY"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "date_cet",
+				"type": "nvarchar"
+			},
+			{
+				"name": "heure_cet",
+				"type": "nvarchar"
+			},
+			{
+				"name": "date_heure_utc",
+				"type": "nvarchar"
+			},
+			{
+				"name": "intensite_emissions_conso",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "part_enr_conso",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "Source",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "CONSO_INTENSITY"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

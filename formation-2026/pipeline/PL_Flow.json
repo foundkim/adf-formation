@@ -1,0 +1,127 @@
+{
+	"name": "PL_Flow",
+	"properties": {
+		"activities": [
+			{
+				"name": "LK_GetData",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "DS_ADLS_SOURCE_CopyDataTP",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Set DataList",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LK_GetData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "DataList",
+					"value": {
+						"value": "@activity('LK_GetData').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set Count",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LK_GetData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Count",
+					"value": {
+						"value": "@activity('LK_GetData').output.count",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set Output",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LK_GetData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "OutPut",
+					"value": {
+						"value": "@string(activity('LK_GetData').output)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"DataList": {
+				"type": "Array"
+			},
+			"Count": {
+				"type": "Integer"
+			},
+			"OutPut": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Flows"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-10-09T07:28:08Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

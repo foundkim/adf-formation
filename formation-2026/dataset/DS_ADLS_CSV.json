@@ -1,0 +1,57 @@
+{
+	"name": "DS_ADLS_CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_CopyDataTP",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"DS_Filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "INTENSITY"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().DS_Filename",
+					"type": "Expression"
+				},
+				"folderPath": "INTENSITY",
+				"fileSystem": "input"
+			},
+			"columnDelimiter": ";",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Date",
+				"type": "String"
+			},
+			{
+				"name": "Heure",
+				"type": "String"
+			},
+			{
+				"name": "Date heure",
+				"type": "String"
+			},
+			{
+				"name": "Intensité GES de la consommation (gCO₂eq/kWh)",
+				"type": "String"
+			},
+			{
+				"name": "Part des EnR dans la consommation (%)",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

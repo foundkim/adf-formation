@@ -1,0 +1,82 @@
+{
+	"name": "DF_DATA_SQL",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_SQL_DATA",
+						"type": "DatasetReference"
+					},
+					"name": "CONSO"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "LS_SQL_DataTP",
+						"type": "LinkedServiceReference"
+					},
+					"name": "AGGR"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CastColumns"
+				},
+				{
+					"name": "TansformSourceCol"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          date_cet as string,",
+				"          heure_cet as string,",
+				"          date_heure_utc as string,",
+				"          intensite_emissions_conso as long,",
+				"          part_enr_conso as long,",
+				"          Source as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> CONSO",
+				"CONSO cast(output(",
+				"          date_heure_utc as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss'",
+				"     ),",
+				"     errors: true) ~> CastColumns",
+				"CastColumns derive(Source = initCap(Source)) ~> TansformSourceCol",
+				"TansformSourceCol aggregate(groupBy(Source),",
+				"     Count = count(Source)) ~> aggregate1",
+				"aggregate1 alterRow(upsertIf(true())) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'AGG_SOURCE',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: true,",
+				"     keys:['Source'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     partitionBy('key',",
+				"          0,",
+				"          Source",
+				"     )) ~> AGGR"
+			]
+		}
+	}
+}

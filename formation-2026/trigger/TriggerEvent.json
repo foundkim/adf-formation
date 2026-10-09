@@ -1,0 +1,25 @@
+{
+	"name": "TriggerEvent",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Pl_Main",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/input/blobs/TP1/signal-ecogaz.csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/fdcd28b7-d1f2-46b2-8128-e5af90312a07/resourceGroups/RG-Formation-ADF/providers/Microsoft.Storage/storageAccounts/saformationtp",
+			"events": [
+				"Microsoft.Storage.BlobCreated",
+				"Microsoft.Storage.BlobDeleted"
+			]
+		}
+	}
+}

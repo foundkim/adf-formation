@@ -1,0 +1,15 @@
+{
+	"name": "adf-formation-tp",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "9263fac5-95e2-4375-9544-66b1122a8fc1",
+		"tenantId": "203c3afc-2874-4915-9563-d6699011d346"
+	}
+}
